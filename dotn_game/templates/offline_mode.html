@@ -1,0 +1,915 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline</title>
+    <style>
+        @property --rotate {
+            syntax: "<angle>";
+            initial-value: 132deg;
+            inherits: false;
+        }
+
+        :root {
+            --board-height: 80vh;
+            --board-width: calc(var(--board-height));
+        }
+
+        body {
+            min-height: 100%;
+            display: flex;
+            align-items: center;
+            padding: 0px 0px 40px 0px;
+            box-sizing: border-box;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .name,
+        .name_go {
+            font-size: 55px;
+            font-family: serif;
+        }
+
+        .navbar {
+            background-color: #003566;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+            padding: 10px 20px;
+            position: sticky;
+            width: 100%;
+            height: 30px;
+            top: 0;
+            z-index: 100;
+            flex-direction: row-reverse;
+        }
+
+
+        .home {
+            margin: 5px;
+        }
+
+        .home a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border: 1px solid white;
+            border-radius: 5px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .home a:hover {
+            background-color: white;
+            color: #333;
+        }
+
+        h1 {
+            font-family: ui-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .board {
+            background: #003566;
+            padding: 3px;
+            position: relative;
+            border-radius: 6px;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            display: flex;
+            color: rgba(88, 199, 250, 0%);
+            cursor: pointer;
+        }
+
+        .board::before {
+            content: "";
+            width: 104%;
+            height: 102%;
+            border-radius: 8px;
+            background-image: linear-gradient(var(--rotate), #5ddcff, #3c67e3 43%, #4e00c2);
+            position: absolute;
+            z-index: -1;
+            top: -1%;
+            left: -2%;
+            animation: spin 2.5s linear infinite;
+        }
+
+        #player {
+            font-size: 35px;
+            margin-bottom: 30px;
+            font-family: serif;
+        }
+
+        .row {
+            display: flex;
+            justify-content: center;
+        }
+
+        .frame {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .horizontal-lines {
+            position: absolute;
+            width: 65%;
+            height: 28%;
+        }
+
+        .diagonal-lines {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+        }
+
+        .vertical-lines {
+            position: absolute;
+            width: 100%;
+            height: 79%;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            align-content: space-between;
+        }
+
+        .line {
+            width: 15px;
+            background-color: #dee0e8;
+        }
+
+        .line123,
+        .line456,
+        .line789 {
+            width: 100%;
+            height: 15px;
+            margin: 50px 0px 100px 0px;
+        }
+
+        .line147,
+        .line258,
+        .line369 {
+            top: 40px;
+            position: relative;
+            height: 250px;
+        }
+
+        .line159 {
+            transform: rotate(45deg);
+            width: 339px;
+            top: 160px;
+            position: absolute;
+            height: 15px;
+        }
+
+        .line357 {
+            transform: rotate(135deg);
+            width: 330px;
+            top: 180px;
+            position: absolute;
+            height: 15px;
+        }
+
+        .place {
+            background: #dee0e8;
+            width: 60px;
+            height: 60px;
+            padding: 3px;
+            border-radius: 35px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            display: inline-block;
+            cursor: pointer;
+            margin: 25px;
+            transition: left ease-out 0.2s, top ease-out 0.2s;
+        }
+
+        .place::before {
+            content: "";
+            position: absolute;
+            background-color: #dee0e8;
+            transition: opacity 0.2s ease-in-out;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .model-container {
+            width: 100%;
+            height: 100%;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            position: absolute;
+            transition: all 0.5s ease;
+        }
+
+        .highlight {
+            background-color: yellow;
+            transition: background-color 0.5s ease;
+        }
+
+        @keyframes spin {
+            0% {
+                --rotate: 0deg;
+            }
+
+            100% {
+                --rotate: 360deg;
+            }
+        }
+
+        @media only screen and (max-width: 768px) {
+            :root {
+                --board-height: 60vh;
+                --board-width: calc(var(--board-height));
+            }
+
+            .name,
+            .name_go {
+                font-size: 40px;
+            }
+
+            #player {
+                font-size: 35px;
+            }
+
+            line {
+                stroke-width: 20px;
+            }
+
+            .place {
+                width: 50px;
+                height: 50px;
+                margin: 20px;
+            }
+
+            #game_over {
+                width: 60vh;
+                height: 40vh;
+            }
+
+            #replay_btn {
+                height: 45px;
+                width: 120px;
+                font-size: 18px;
+            }
+
+            .replay {
+                font-size: 16px;
+            }
+
+            .line123,
+            .line456,
+            .line789 {
+                height: 15px;
+                margin: 45px 0px 80px 0px;
+            }
+
+            .line147,
+            .line258,
+            .line369 {
+                height: 200px;
+            }
+
+            .line159,
+            .line357 {
+                height: 15px;
+                top: 142px;
+                width: 285px;
+            }
+        }
+
+        @media only screen and (max-width: 425px) {
+            :root {
+                --board-height: 45vh;
+                --board-width: calc(var(--board-height));
+            }
+
+            .name,
+            .name_go {
+                font-size: 30px;
+            }
+
+            #player {
+                font-size: 30px;
+            }
+
+            line {
+                stroke-width: 15px;
+            }
+
+            .place {
+                width: 40px;
+                height: 40px;
+                margin: 15px;
+            }
+
+            #game_over {
+                width: 45vh;
+                height: 30vh;
+            }
+
+            #replay_btn {
+                height: 40px;
+                width: 100px;
+                font-size: 16px;
+            }
+
+            .replay {
+                font-size: 14px;
+            }
+
+            .line123,
+            .line456,
+            .line789 {
+                height: 8px;
+                margin: 20px 0px 60px 0px;
+            }
+
+            .line147,
+            .line258,
+            .line369 {
+                height: 100px;
+            }
+
+            .line159,
+            .line357 {
+                height: 8px;
+                top: 120px;
+                width: 150px;
+            }
+        }
+
+        @media only screen and (max-width: 375px) {
+            :root {
+                --board-height: 40vh;
+                --board-width: calc(var(--board-height));
+            }
+
+            .name,
+            .name_go {
+                font-size: 25px;
+            }
+
+            #player {
+                font-size: 25px;
+            }
+
+            line {
+                stroke-width: 15px;
+            }
+
+            .place {
+                width: 35px;
+                height: 35px;
+                margin: 12px;
+            }
+
+            #game_over {
+                width: 40vh;
+                height: 30vh;
+            }
+
+            #replay_btn {
+                height: 35px;
+                width: 90px;
+                font-size: 14px;
+            }
+
+            .replay {
+                font-size: 12px;
+            }
+
+            .line123,
+            .line456,
+            .line789 {
+                height: 6px;
+                margin: 15px 0px 50px 0px;
+            }
+
+            .line147,
+            .line258,
+            .line369 {
+                height: 80px;
+            }
+
+            .line159,
+            .line357 {
+                height: 6px;
+                top: 110px;
+                width: 120px;
+            }
+        }
+
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-buttons {
+            margin-top: 20px;
+        }
+
+        .modal-buttons button {
+            margin: 0 10px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #winner-name {
+            font-size: 24px;
+            color: #0535f4;
+        }
+
+        #winner-message {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+
+        .avatar-select {
+            display: block;
+            font-size: 15px;
+            font-family: serif;
+        }
+
+        #pieceselectcontainer {
+            display: flex;
+            margin: 10px;
+            border: 1px solid black;
+            padding: 10px;
+            border-radius: 10px;
+            flex-direction: column;
+            align-content: center;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .player-select-div {
+            margin: 10px;
+            display: flex;
+            flex-direction: column;
+            align-content: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="navbar">
+        <div class="home">
+            <a href="{% url 'home' %}">Home</a>
+        </div>
+    </div>
+    <div id="pieceselectcontainer" class="avatar-select">
+
+        <div class="player-select-div">
+            <h2>Player 1 , Select your Avatar</h2>
+            <select id="player1Avatar" class="avatar-select">
+                <option value="dog.png">Dog</option>
+                <option value="bear.png">Bear</option>
+                <option value="buffalo.png">Buffalo</option>
+                <option value="chick.png">Chick</option>
+                <option value="chicken.png">Chicken</option>
+                <option value="cow.png">Cow</option>
+                <option value="crocodile.png">Crocodile</option>
+                <option value="duck.png">Duck</option>
+                <option value="elephant.png">Elephant</option>
+                <option value="frog.png">Frog</option>
+                <option value="giraffe.png">Giraffe</option>
+                <option value="goat.png">Goat</option>
+                <option value="gorilla.png">Gorilla</option>
+                <option value="hippo.png">Hippo</option>
+                <option value="horse.png">Horse</option>
+                <option value="monkey.png">Monkey</option>
+                <option value="moose.png">Moose</option>
+                <option value="narwhal.png">Narwhal</option>
+                <option value="owl.png">Owl</option>
+                <option value="panda.png">Panda</option>
+                <option value="parrot.png">Parrot</option>
+                <option value="penguin.png">Penguin</option>
+                <option value="pig.png">Pig</option>
+                <option value="rabbit.png">Rabbit</option>
+                <option value="rhino.png">Rhino</option>
+                <option value="sloth.png">Sloth</option>
+                <option value="snake.png">Snake</option>
+                <option value="walrus.png">Walrus</option>
+                <option value="whale.png">Whale</option>
+                <option value="zebra.png">Zebra</option>
+
+            </select>
+        </div>
+        <div class="player-select-div">
+            <h2>Player 2 , Select your Avatar</h2>
+            <select id="player2Avatar" class="avatar-select">
+                <option value="dog.png">Dog</option>
+                <option value="bear.png">Bear</option>
+                <option value="buffalo.png">Buffalo</option>
+                <option value="chick.png">Chick</option>
+                <option value="chicken.png">Chicken</option>
+                <option value="cow.png">Cow</option>
+                <option value="crocodile.png">Crocodile</option>
+                <option value="duck.png">Duck</option>
+                <option value="elephant.png">Elephant</option>
+                <option value="frog.png">Frog</option>
+                <option value="giraffe.png">Giraffe</option>
+                <option value="goat.png">Goat</option>
+                <option value="gorilla.png">Gorilla</option>
+                <option value="hippo.png">Hippo</option>
+                <option value="horse.png">Horse</option>
+                <option value="monkey.png">Monkey</option>
+                <option value="moose.png">Moose</option>
+                <option value="narwhal.png">Narwhal</option>
+                <option value="owl.png">Owl</option>
+                <option value="panda.png">Panda</option>
+                <option value="parrot.png">Parrot</option>
+                <option value="penguin.png">Penguin</option>
+                <option value="pig.png">Pig</option>
+                <option value="rabbit.png">Rabbit</option>
+                <option value="rhino.png">Rhino</option>
+                <option value="sloth.png">Sloth</option>
+                <option value="snake.png">Snake</option>
+                <option value="walrus.png">Walrus</option>
+                <option value="whale.png">Whale</option>
+                <option value="zebra.png">Zebra</option>
+            </select>
+        </div>
+    </div>
+    <div class="container">
+        <h1 class="name">DOTN</h1>
+        <p id="player">Player 1 Turn!</p>
+        <div id="board-frame" class="board">
+            <div class="frame">
+                <div class="horizontal-lines">
+                    <div class="line line123"></div>
+                    <div class="line line456"></div>
+                    <div class="line line789"></div>
+                </div>
+                <div class="vertical-lines">
+                    <div class="line line147"></div>
+                    <div class="line line258"></div>
+                    <div class="line line369"></div>
+                </div>
+                <div class="diagonal-lines">
+                    <div class="line line159"></div>
+                    <div class="line line357"></div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="place empty" data-id="1">
+
+                </div>
+                <div class="place empty" data-id="2">
+                </div>
+                <div class="place empty" data-id="3">
+                </div>
+            </div>
+            <div class="row">
+                <div class="place empty" data-id="4">
+                </div>
+                <div class="place empty" data-id="5">
+                </div>
+                <div class="place empty" data-id="6">
+                </div>
+            </div>
+            <div class="row">
+                <div class="place empty" data-id="7">
+                </div>
+                <div class="place empty" data-id="8">
+                </div>
+                <div class="place empty" data-id="9">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        let player = 1;
+        let clicked = 0;
+        const dot_width = 20;
+        const dot_margin = 20;
+        const places = document.getElementsByClassName("place");
+
+        const player1AvatarSelect = document.getElementById("player1Avatar");
+        const player2AvatarSelect = document.getElementById("player2Avatar");
+        const avatarcontainer = document.getElementById("pieceselectcontainer");
+
+        let selectedPlayer1Avatar = "";
+        let selectedPlayer2Avatar = "";
+
+        player1AvatarSelect.addEventListener("change", () => {
+            selectedPlayer1Avatar = player1AvatarSelect.value;
+            checkAndStartGame();
+        });
+
+        player2AvatarSelect.addEventListener("change", () => {
+            selectedPlayer2Avatar = player2AvatarSelect.value;
+            checkAndStartGame();
+        });
+
+        function checkAndStartGame() {
+            if (selectedPlayer1Avatar !== "" && selectedPlayer2Avatar !== "") {
+                startGame();
+                hideAvatarSelection();
+            }
+        }
+
+        function startGame() {
+            for (let place of places) {
+                place.addEventListener("click", buttonPressed);
+            }
+        }
+
+        function hideAvatarSelection() {
+            avatarcontainer.style.display = "none";
+        }
+
+        const player_1 = [];
+        const player_2 = [];
+
+        const winningCombinations = [
+            [1, 2, 3], [4, 5, 6], [7, 8, 9], // Horizontal lines
+            [1, 4, 7], [2, 5, 8], [3, 6, 9], // Vertical lines
+            [1, 5, 9], [3, 5, 7]            // Diagonal lines
+        ];
+
+        function checkAndShowWin(playerPieces) {
+            for (const combination of winningCombinations) {
+                const isWin = combination.every(id => playerPieces.includes(id.toString()));
+                if (isWin) {
+                    console.log("Winning Combination:", combination);
+                    const concatenatedID = combination.join('');
+                    const line = document.querySelector(`.line.line${concatenatedID}`);
+
+                    if (line) {
+                        console.log("Changing Line Color...");
+                        line.style.backgroundColor = (player === 1) ? "#0535f4" : "#f40505";
+                    } else {
+                        console.log("Line Element not found.");
+                    }
+
+                    const winner = (player === 1) ? "Player 1" : "Player 2";
+                    Swal.fire({
+                        title: "Congratulations!",
+                        text: `${winner} wins!`,
+                        icon: "success",
+                        confirmButtonText: "OK",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            location.reload();
+                        }
+                    });
+
+                    for (let place of places) {
+                        place.removeEventListener("click", buttonPressed);
+                    }
+
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function checkWin(playerPieces) {
+            for (const combination of winningCombinations) {
+                const isWin = combination.every(id => playerPieces.includes(id.toString()));
+                if (isWin) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function updateUI(place) {
+            const placeElement = document.querySelector(`[data-id="${place}"]`);
+            if (placeElement) {
+                let currentPlayerImage = (player === 1) ? selectedPlayer1Avatar : selectedPlayer2Avatar;
+                const imageContainer = document.createElement('div');
+                imageContainer.classList.add('image-piece');
+                imageContainer.style.width = '100%';
+                imageContainer.style.height = '100%';
+                imageContainer.style.backgroundImage = `url("/static/dotn_game/2d_models/${currentPlayerImage}")`;
+                imageContainer.style.backgroundSize = 'contain';
+                imageContainer.style.backgroundRepeat = 'no-repeat';
+                imageContainer.style.backgroundPosition = 'center';
+                imageContainer.style.position = 'relative';
+                imageContainer.style.borderRadius = '30px';
+                imageContainer.style.backgroundColor = (player === 1) ? 'blue' : 'red';
+
+                placeElement.innerHTML = '';
+                placeElement.appendChild(imageContainer);
+                placeElement.classList.remove("empty");
+            }
+        }
+
+        let highlightedPlace = null;
+        function removePiece(piece, playerPieces) {
+            const index = playerPieces.indexOf(piece);
+            if (index !== -1) {
+                const placeElement = document.querySelector(`[data-id="${piece}"]`);
+                if (placeElement) {
+                    const imageContainer = placeElement.querySelector('.image-piece');
+                    if (imageContainer) {
+                        if (highlightedPlace) {
+                            highlightedPlace.classList.remove("highlight");
+                        }
+                        placeElement.classList.add("highlight");
+                        highlightedPlace = placeElement;
+                    }
+                }
+            }
+        }
+
+        function movePiece(fromPlace, toPlace, playerPieces) {
+            const placeElementFrom = document.querySelector(`[data-id="${fromPlace}"]`);
+            const placeElementTo = document.querySelector(`[data-id="${toPlace}"]`);
+
+            const adjacentPlaces = {
+                1: [2, 4, 5],
+                2: [1, 3, 5],
+                3: [2, 5, 6],
+                4: [1, 5, 7],
+                5: [1, 2, 3, 4, 6, 7, 8, 9],
+                6: [3, 5, 9],
+                7: [4, 5, 8],
+                8: [5, 7, 9],
+                9: [6, 5, 8]
+            };
+
+            if (placeElementFrom && placeElementTo) {
+                const transitionDuration = 500;
+                const isAdjacentAndAvailable =
+                    adjacentPlaces[fromPlace].includes(parseInt(toPlace)) &&
+                    !player_1.includes(toPlace) &&
+                    !player_2.includes(toPlace);
+
+                if (isAdjacentAndAvailable) {
+                    const imagePiece = placeElementFrom.querySelector('.image-piece');
+                    const fromRect = placeElementFrom.getBoundingClientRect();
+                    const toRect = placeElementTo.getBoundingClientRect();
+                    const deltaX = toRect.left - fromRect.left;
+                    const deltaY = toRect.top - fromRect.top;
+
+                    imagePiece.style.transition = `
+                transform ${transitionDuration}ms ease-out,
+                z-index ${transitionDuration}ms linear`;
+
+                    imagePiece.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+                    imagePiece.style.zIndex = 1;
+
+                    placeElementTo.style.justifyContent = 'center';
+
+                    setTimeout(() => {
+                        playerPieces.splice(playerPieces.indexOf(fromPlace), 1);
+                        placeElementFrom.classList.remove("highlight");
+                    }, 1);
+
+                    return new Promise((resolve) => {
+                        setTimeout(() => {
+                            imagePiece.style.transition = '';
+                            imagePiece.style.transform = 'translate(0, 0)';
+                            imagePiece.style.zIndex = '';
+                            placeElementFrom.innerHTML = '';
+                            playerPieces.push(toPlace.toString());
+                            updateUI(toPlace);
+                            checkAndShowWin(player_1);
+                            checkAndShowWin(player_2);
+                            resolve(true);
+                        }, transitionDuration);
+                    });
+                } else {
+                    console.log("Invalid move. Please choose an adjacent and available position.");
+                    alert("Invalid move. Please choose an adjacent and available position.");
+                    return new Promise((resolve) => {
+                        resolve(false);
+                    });
+                }
+            } else {
+                console.error("Place elements not found.");
+                return new Promise((resolve) => {
+                    resolve(false);
+                });
+            }
+        }
+
+        let removeid;
+
+        function buttonPressed(e) {
+            const clickedPlaceElement = e.target.closest('.place');
+            if (clickedPlaceElement) {
+                const clickedPlace = clickedPlaceElement.dataset.id;
+
+                if (clicked >= 6) {
+                    if (player === 1 && player_1.includes(clickedPlace)) {
+                        console.log("Player", player, "removing piece:", clickedPlace);
+                        removeid = clickedPlace;
+                        removePiece(clickedPlace, player_1);
+                    } else if (player === 2 && player_2.includes(clickedPlace)) {
+                        console.log("Player", player, "removing piece:", clickedPlace);
+                        removeid = clickedPlace;
+                        removePiece(clickedPlace, player_2);
+                    } else if (player === 1 && !player_1.includes(clickedPlace) && !player_2.includes(clickedPlace)) {
+                        console.log("Player", player, "moving piece:", clickedPlace);
+                        movePiece(removeid, clickedPlace, player_1)
+                            .then((validMove) => {
+                                if (validMove) {
+                                    player = 2;
+                                    updatePlayerText();
+                                }
+                            });
+
+                        checkAndShowWin(player_1);
+                    } else if (player === 2 && !player_2.includes(clickedPlace) && !player_1.includes(clickedPlace)) {
+                        console.log("Player", player, "moving piece:", clickedPlace);
+                        movePiece(removeid, clickedPlace, player_2)
+                            .then((validMove) => {
+                                if (validMove) {
+                                    player = 1;
+                                    updatePlayerText();
+                                }
+                            });
+
+                        checkAndShowWin(player_2);
+                        checkAndShowWin(player_1);
+                    }
+                }
+
+                if (clicked < 6) {
+                    if (player === 1 && player_1.length < 3 && !player_1.includes(clickedPlace) && !player_2.includes(clickedPlace)) {
+                        player_1.push(clickedPlace);
+                        updateUI(clickedPlace);
+                        checkAndShowWin(player_1);
+                        player = (player === 1) ? 2 : 1;
+                        updatePlayerText();
+                    } else if (player === 2 && player_2.length < 3 && !player_1.includes(clickedPlace) && !player_2.includes(clickedPlace)) {
+                        player_2.push(clickedPlace);
+                        updateUI(clickedPlace);
+                        checkAndShowWin(player_2);
+                        player = (player === 2) ? 1 : 2;
+                        updatePlayerText();
+                    } else {
+                        alert("Please check the place, It is already Occupied");
+                        clicked--;
+                    }
+                }
+
+                clicked++;
+            }
+        }
+
+        function updatePlayerText() {
+            const currentPlayerText = `Player ${player} Turn!`;
+            const playerTurnElement = document.getElementById("player");
+            playerTurnElement.textContent = currentPlayerText;
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,466 @@
+@property --rotate {
+  syntax: "<angle>";
+  initial-value: 132deg;
+  inherits: false;
+}
+
+/* Root styles */
+:root {
+  --board-height: 80vh;
+  --board-width: calc(var(--board-height));
+}
+
+body {
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  padding: 0px 0px 40px 0px;
+  box-sizing: border-box;
+}
+
+.name,
+.name_go {
+  font-size: 70px;
+  font-family: serif;
+}
+
+/* Navbar styles */
+.navbar {
+  background-color: #57b846;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+
+.home {
+  margin: 5px;
+}
+
+.home a {
+  color: white;
+  text-decoration: none;
+  padding: 8px 15px;
+  border: 1px solid white;
+  border-radius: 5px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.home a:hover {
+  background-color: white;
+  color: #333;
+}
+
+h1 {
+  font-family: ui-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+.board {
+  background: #191c29;
+  /* width: var(--board-width); */
+  padding: 3px;
+  position: relative;
+  border-radius: 6px;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  display: flex;
+  color: rgba(88, 199, 250, 0%);
+  cursor: pointer;
+}
+
+/* Animation for the board background */
+.board::before {
+  content: "";
+  width: 104%;
+  height: 102%;
+  border-radius: 8px;
+  background-image: linear-gradient(var(--rotate), #5ddcff, #3c67e3 43%, #4e00c2);
+  position: absolute;
+  z-index: -1;
+  top: -1%;
+  left: -2%;
+  animation: spin 2.5s linear infinite;
+}
+
+#player {
+  font-size: 40px;
+  margin: 10px;
+  font-family: serif;
+}
+
+/* Styling for the rows and lines */
+.row {
+  display: flex;
+  justify-content: center;
+}
+
+/* Styling for the lines frame */
+.frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.horizontal-lines {
+  position: absolute;
+  width: 65%;
+  height: 28%;
+}
+
+.diagonal-lines {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+}
+
+.vertical-lines {
+  position: absolute;
+  width: 100%;
+  height: 79%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap;
+  align-content: space-between;
+}
+
+.line {
+  width: 15px;
+  background-color: #dee0e8;
+}
+
+.line123,
+.line456,
+.line789 {
+  width: 100%;
+  height: 15px;
+  margin: 50px 0px 100px 0px;
+}
+
+.line147,
+.line258,
+.line369 {
+  top: 40px;
+  position: relative;
+  height: 250px;
+}
+
+.line159 {
+  transform: rotate(45deg);
+  width: 339px;
+  top: 160px;
+  position: absolute;
+  height: 15px;
+}
+
+.line357 {
+  transform: rotate(135deg);
+  width: 330px;
+  top: 180px;
+  position: absolute;
+  height: 15px;
+}
+
+
+
+
+/* Styling for each place dot */
+.place {
+  background: #dee0e8;
+  width: 60px;
+  height: 60px;
+  padding: 3px;
+  border-radius: 35px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  display: inline-block;
+  cursor: pointer;
+  margin: 25px;
+  transition: left ease-out 0.2s, top ease-out 0.2s;
+}
+
+.place::before {
+  content: "";
+  position: absolute;
+  background-color: #dee0e8;
+  transition: opacity 0.2s ease-in-out;
+  pointer-events: none;
+  opacity: 0;
+  /* Hide the lines by default */
+}
+
+.model-container {
+  width: 100%;
+  height: 100%;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  position: absolute;
+  transition: all 0.5s ease;
+}
+
+.highlight {
+  background-color: yellow;
+  /* Change the background color to yellow */
+  transition: background-color 0.5s ease;
+  /* Add transitions for smooth effects */
+}
+
+/* Animation for the board background rotation */
+@keyframes spin {
+  0% {
+    --rotate: 0deg;
+  }
+
+  100% {
+    --rotate: 360deg;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  :root {
+    --board-height: 60vh;
+    --board-width: calc(var(--board-height));
+  }
+
+  .name,
+  .name_go {
+    font-size: 40px;
+  }
+
+  #player {
+    font-size: 35px;
+  }
+
+  line {
+    stroke-width: 20px;
+  }
+
+  .place {
+    width: 50px;
+    height: 50px;
+    margin: 20px;
+  }
+
+  #game_over {
+    width: 60vh;
+    height: 40vh;
+  }
+
+  #replay_btn {
+    height: 45px;
+    width: 120px;
+    font-size: 18px;
+  }
+
+  .replay {
+    font-size: 16px;
+  }
+
+  .line123,
+  .line456,
+  .line789 {
+    height: 15px;
+    margin: 45px 0px 80px 0px;
+  }
+
+  .line147,
+  .line258,
+  .line369 {
+    height: 200px;
+  }
+
+  .line159,
+  .line357 {
+    height: 15px;
+    top: 142px;
+    width: 285px;
+  }
+}
+
+@media only screen and (max-width: 425px) {
+  :root {
+    --board-height: 45vh;
+    --board-width: calc(var(--board-height));
+  }
+
+  .name,
+  .name_go {
+    font-size: 30px;
+  }
+
+  #player {
+    font-size: 30px;
+  }
+
+  line {
+    stroke-width: 15px;
+  }
+
+  .place {
+    width: 40px;
+    height: 40px;
+    margin: 15px;
+  }
+
+  #game_over {
+    width: 45vh;
+    height: 30vh;
+  }
+
+  #replay_btn {
+    height: 40px;
+    width: 100px;
+    font-size: 16px;
+  }
+
+  .replay {
+    font-size: 14px;
+  }
+
+  .line123,
+  .line456,
+  .line789 {
+    height: 8px;
+    margin: 20px 0px 60px 0px;
+  }
+
+  .line147,
+  .line258,
+  .line369 {
+    height: 100px;
+  }
+
+  .line159,
+  .line357 {
+    height: 8px;
+    top: 120px;
+    width: 150px;
+  }
+}
+
+@media only screen and (max-width: 375px) {
+  :root {
+    --board-height: 40vh;
+    --board-width: calc(var(--board-height));
+  }
+
+  .name,
+  .name_go {
+    font-size: 25px;
+  }
+
+  #player {
+    font-size: 25px;
+  }
+
+  line {
+    stroke-width: 15px;
+  }
+
+  .place {
+    width: 35px;
+    height: 35px;
+    margin: 12px;
+  }
+
+  #game_over {
+    width: 40vh;
+    height: 30vh;
+  }
+
+  #replay_btn {
+    height: 35px;
+    width: 90px;
+    font-size: 14px;
+  }
+
+  .replay {
+    font-size: 12px;
+  }
+
+  .line123,
+  .line456,
+  .line789 {
+    height: 6px;
+    margin: 15px 0px 50px 0px;
+  }
+
+  .line147,
+  .line258,
+  .line369 {
+    height: 80px;
+  }
+
+  .line159,
+  .line357 {
+    height: 6px;
+    top: 110px;
+    width: 120px;
+  }
+}
+
+
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  text-align: center;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.modal-buttons {
+  margin-top: 20px;
+}
+
+.modal-buttons button {
+  margin: 0 10px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#winner-name {
+  font-size: 24px;
+  color: #0535f4;
+}
+
+#winner-message {
+  font-size: 20px;
+  margin-bottom: 10px;
+}

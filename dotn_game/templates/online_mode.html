@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Online Mode</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body, h1 {
+            margin: 0;
+            padding: 0;
+        }
+
+        @property --rotate {
+            syntax: "<angle>";
+            initial-value: 132deg;
+            inherits: false;
+        }
+
+        /* Root styles */
+        :root {
+            --board-height: 80vh;
+            --board-width: calc(var(--board-height));
+        }
+
+        .name, .name_go {
+            font-size: 70px;
+            font-family: serif;
+        }
+
+        .board-frame {
+            display: flex;
+            justify-content: center;
+            align-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .board {
+            background: #003566;
+            width: var(--board-width);
+            padding: 3px;
+            position: relative;
+            border-radius: 6px;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            display: flex;
+            color: rgba(88, 199, 250, 0%);
+            cursor: pointer;
+        }
+
+        /* Animation for the board background */
+        .board::before {
+            content: "";
+            width: 104%;
+            height: 102%;
+            border-radius: 8px;
+            background-image: linear-gradient(var(--rotate), #5ddcff, #3c67e3 43%, #4e00c2);
+            position: absolute;
+            z-index: -1;
+            top: -1%;
+            left: -2%;
+            animation: spin 2.5s linear infinite;
+        }
+
+        /* Navbar styles */
+        .navbar {
+            background-color: #003566;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .home {
+            margin: 5px;
+            display: flex;
+        }
+
+        .home a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border: 1px solid white;
+            margin: 0 5px;
+            border-radius: 5px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .home a:hover {
+            background-color: white;
+            color: #333;
+        }
+
+        h1 {
+            font-family: ui-serif;
+            text-align: center;
+            font-size: 40px;
+            padding: 20px 0;
+        }
+
+        .card {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            background-color: #fff;
+            max-width: 600px;
+            height: 350px;
+            margin: 0 auto;
+        }
+
+        .btn-primary {
+            background-color: #003566;
+            color: #fff;
+            border: 1px solid white;
+            border-radius: 10px;
+            font-size: 18px;
+            text-align: center;
+            width: 60%;
+            height: 40px;
+            margin: 60px auto;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: white;
+            color: #333;
+        }
+
+        .btn-primary a {
+            color: white;
+            text-decoration: none;
+            font-size: 30px;
+            margin: 3px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-primary a:hover {
+            color: #333;
+        }
+
+        @keyframes spin {
+            0% {
+                --rotate: 0deg;
+            }
+
+            100% {
+                --rotate: 360deg;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="navbar">
+        <div class="home">
+            <a href="{% url 'home' %}">Home</a>
+        </div>
+    </div>
+    <div class="board-frame">
+        <h1>Online Mode</h1>
+        <div class="board">
+            <div class="btn-primary"><a href="{% url 'create_room' %}">Create a Room</a></div>
+            <div class="btn-primary"><a href="{% url 'enter_room' %}">Enter a Room</a></div>
+        </div>
+    </div>
+</body>
+
+</html>

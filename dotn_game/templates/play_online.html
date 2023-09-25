@@ -1,0 +1,1275 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Play Online</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.1.1/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.1.1/dist/sweetalert2.min.js"></script>
+    <style>
+        @property --rotate {
+            syntax: "<angle>";
+            initial-value: 132deg;
+            inherits: false;
+        }
+
+        :root {
+            --board-height: 80vh;
+            --board-width: calc(var(--board-height));
+        }
+
+        body {
+            min-height: 100%;
+            display: flex;
+            align-items: center;
+            padding: 0 0 40px 0;
+            box-sizing: border-box;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .name,
+        .name_go {
+            font-size: 55px;
+            font-family: serif;
+        }
+
+        .navbar {
+            background-color: #003566;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+            padding: 10px 20px;
+            position: sticky;
+            width: 100%;
+            height: 30px;
+            top: 0;
+            z-index: 100;
+            flex-direction: row-reverse;
+        }
+
+        .home a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border: 1px solid white;
+            border-radius: 5px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .home a:hover {
+            background-color: white;
+            color: #333;
+        }
+
+        h1 {
+            font-family: ui-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin: 20px;
+            align-items: center;
+        }
+
+        .board {
+            background: #003566;
+            padding: 3px;
+            position: relative;
+            border-radius: 6px;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            display: flex;
+            color: rgba(88, 199, 250, 0%);
+            cursor: pointer;
+        }
+
+        .board::before {
+            content: "";
+            width: 104%;
+            height: 102%;
+            border-radius: 8px;
+            background-image: linear-gradient(var(--rotate), #5ddcff, #3c67e3 43%, #4e00c2);
+            position: absolute;
+            z-index: -1;
+            top: -1%;
+            left: -2%;
+            animation: spin 2.5s linear infinite;
+        }
+
+        #player {
+            font-size: 35px;
+            margin-bottom: 30px;
+            font-family: serif;
+        }
+
+        .row {
+            display: flex;
+            justify-content: center;
+        }
+
+        .frame {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .horizontal-lines {
+            position: absolute;
+            width: 65%;
+            height: 28%;
+        }
+
+        .diagonal-lines {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .vertical-lines {
+            position: absolute;
+            width: 100%;
+            height: 79%;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            align-content: space-between;
+        }
+
+        .line {
+            width: 15px;
+            background-color: #dee0e8;
+        }
+
+        .line123,
+        .line456,
+        .line789 {
+            width: 100%;
+            height: 15px;
+            margin: 50px 0px 100px 0px;
+        }
+
+        .line147,
+        .line258,
+        .line369 {
+            top: 40px;
+            position: relative;
+            height: 250px;
+        }
+
+        .line159 {
+            transform: rotate(45deg);
+            width: 339px;
+            top: 160px;
+            position: absolute;
+            height: 15px;
+        }
+
+        .line357 {
+            transform: rotate(135deg);
+            width: 330px;
+            top: 180px;
+            position: absolute;
+            height: 15px;
+        }
+
+        .place {
+            background: #dee0e8;
+            width: 60px;
+            height: 60px;
+            padding: 3px;
+            border-radius: 35px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            display: inline-block;
+            cursor: pointer;
+            margin: 25px;
+            transition: left ease-out 0.2s, top ease-out 0.2s;
+        }
+
+        .place::before {
+            content: "";
+            position: absolute;
+            background-color: #dee0e8;
+            transition: opacity 0.2s ease-in-out;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .model-container {
+            width: 100%;
+            height: 100%;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            position: absolute;
+            transition: all 0.5s ease;
+        }
+
+        .highlight {
+            background-color: rgb(231, 231, 65);
+            transition: background-color 0.5s ease;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-buttons {
+            margin-top: 20px;
+        }
+
+        .modal-buttons button {
+            margin: 0 10px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #winner-name {
+            font-size: 24px;
+            color: #0535f4;
+        }
+
+        #winner-message {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .username {
+            font-size: 20px;
+        }
+
+        .total-container {
+            display: flex;
+            flex-direction: row;
+            align-content: center;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container-msg {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: 0 auto;
+            margin-top: 20px;
+        }
+
+        #message-container {
+            gap: 10px;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        #message-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        #send-button {
+            background-color: #003566;
+            color: white;
+            border: 1px solid white;
+            border-radius: 4px;
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #send-button:hover {
+            background-color: #f0f0f0;
+            color: #333;
+            border: 1px solid black;
+        }
+
+        #chat-history {
+            width: 90%;
+            max-width: 100%;
+            margin-top: 20px;
+            overflow-y: auto;
+            max-height: 300px;
+        }
+
+        .chat-history-wrapper {
+            max-height: 270px;
+            overflow-y: auto;
+            width: 100%;
+            display: flex;
+            margin-top: 10px;
+        }
+
+        .chat-message {
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            word-wrap: break-word;
+        }
+
+        .chat-message .sender-name {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .user-message {
+            position: relative;
+            margin-left: 20px;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #aca1a173;
+            width: 200px;
+            text-align: left;
+            border: 1px solid rgb(54, 53, 53);
+            border-radius: 10px;
+        }
+
+        .other-user-message {
+            position: relative;
+            margin-bottom: 10px;
+            margin-left: calc(100% - 240px);
+            padding: 10px;
+            background-color: rgba(135, 207, 235, 0.914);
+            width: 200px;
+            text-align: left;
+            border: 1px solid rgba(2, 61, 84, 0.914);
+            border-radius: 10px;
+        }
+
+        .user-message:before {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-top: 17px solid rgb(54, 53, 53);
+            border-left: 16px solid transparent;
+            border-right: 16px solid transparent;
+            top: -1px;
+            left: -17px;
+        }
+
+        .other-user-message:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-bottom: 15px solid rgba(2, 61, 84, 0.914);
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            bottom: 0;
+            right: -15px;
+        }
+
+        .other-user-message:before {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-bottom: 17px solid rgba(2, 61, 84, 0.914);
+            border-left: 16px solid transparent;
+            border-right: 16px solid transparent;
+            bottom: -1px;
+            right: -17px;
+        }
+
+        .sender-name {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        @keyframes spin {
+            0% {
+                --rotate: 0deg;
+            }
+
+            100% {
+                --rotate: 360deg;
+            }
+        }
+
+        @media only screen and (max-width: 768px) {
+            :root {
+                --board-height: 60vh;
+                --board-width: calc(var(--board-height));
+            }
+
+            .name,
+            .name_go {
+                font-size: 40px;
+            }
+
+            #player {
+                font-size: 35px;
+            }
+
+            line {
+                stroke-width: 20px;
+            }
+
+            .place {
+                width: 50px;
+                height: 50px;
+                margin: 20px;
+            }
+
+            #game_over {
+                width: 60vh;
+                height: 40vh;
+            }
+
+            #replay_btn {
+                height: 45px;
+                width: 120px;
+                font-size: 18px;
+            }
+
+            .replay {
+                font-size: 16px;
+            }
+
+            .line123,
+            .line456,
+            .line789 {
+                height: 15px;
+                margin: 45px 0px 80px 0px;
+            }
+
+            .line147,
+            .line258,
+            .line369 {
+                height: 200px;
+            }
+
+            .line159,
+            .line357 {
+                height: 15px;
+                top: 142px;
+                width: 285px;
+            }
+
+            .total-container {
+                display: block;
+            }
+
+            .container-msg {
+                margin-left: 0;
+            }
+        }
+
+        @media only screen and (max-width: 425px) {
+            :root {
+                --board-height: 45vh;
+                --board-width: calc(var(--board-height));
+            }
+
+            .name,
+            .name_go {
+                font-size: 30px;
+            }
+
+            #player {
+                font-size: 30px;
+            }
+
+            line {
+                stroke-width: 15px;
+            }
+
+            .place {
+                width: 40px;
+                height: 40px;
+                margin: 15px;
+            }
+
+            #game_over {
+                width: 45vh;
+                height: 30vh;
+            }
+
+            #replay_btn {
+                height: 40px;
+                width: 100px;
+                font-size: 16px;
+            }
+
+            .replay {
+                font-size: 14px;
+            }
+
+            .line123,
+            .line456,
+            .line789 {
+                height: 8px;
+                margin: 20px 0px 60px 0px;
+            }
+
+            .line147,
+            .line258,
+            .line369 {
+                height: 100px;
+            }
+
+            .line159,
+            .line357 {
+                height: 8px;
+                top: 120px;
+                width: 120px;
+            }
+
+            .total-container {
+                display: block;
+            }
+
+            .container-msg {
+                margin-left: 0;
+            }
+        }
+
+        @media only screen and (max-width: 375px) {
+            :root {
+                --board-height: 40vh;
+                --board-width: calc(var(--board-height));
+            }
+
+            .name,
+            .name_go {
+                font-size: 25px;
+            }
+
+            #player {
+                font-size: 25px;
+            }
+
+            line {
+                stroke-width: 15px;
+            }
+
+            .place {
+                width: 35px;
+                height: 35px;
+                margin: 12px;
+            }
+
+            #game_over {
+                width: 40vh;
+                height: 30vh;
+            }
+
+            #replay_btn {
+                height: 35px;
+                width: 90px;
+                font-size: 14px;
+            }
+
+            .replay {
+                font-size: 12px;
+            }
+
+            .line123,
+            .line456,
+            .line789 {
+                height: 6px;
+                margin: 15px 0px 50px 0px;
+            }
+
+            .line147,
+            .line258,
+            .line369 {
+                height: 80px;
+            }
+
+            .line159,
+            .line357 {
+                height: 6px;
+                top: 110px;
+                width: 120px;
+            }
+
+            .total-container {
+                display: block;
+            }
+
+            .container-msg {
+                margin-left: 0;
+            }
+        }
+
+        .avatar-select {
+            display: block;
+            font-size: 15px;
+            font-family: serif;
+        }
+
+        #pieceselectcontainer {
+            display: flex;
+            margin: 10px;
+            border: 1px solid black;
+            padding: 10px;
+            border-radius: 10px;
+            flex-direction: column;
+            align-content: center;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .player-select-div {
+            margin: 10px;
+            display: flex;
+            flex-direction: column;
+            align-content: center;
+            justify-content: center;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="navbar">
+        <div class="home">
+            <a href="{% url 'home' %}">Home</a>
+        </div>
+    </div>
+    <div id="pieceselectcontainer" class="avatar-select">
+
+        <div class="player-select-div">
+            <h2>Player , Select your Avatar</h2>
+            <select id="playerAvatar" class="avatar-select">
+                <option value="dog.png">Dog</option>
+                <option value="bear.png">Bear</option>
+                <option value="buffalo.png">Buffalo</option>
+                <option value="chick.png">Chick</option>
+                <option value="chicken.png">Chicken</option>
+                <option value="cow.png">Cow</option>
+                <option value="crocodile.png">Crocodile</option>
+                <option value="duck.png">Duck</option>
+                <option value="elephant.png">Elephant</option>
+                <option value="frog.png">Frog</option>
+                <option value="giraffe.png">Giraffe</option>
+                <option value="goat.png">Goat</option>
+                <option value="gorilla.png">Gorilla</option>
+                <option value="hippo.png">Hippo</option>
+                <option value="horse.png">Horse</option>
+                <option value="monkey.png">Monkey</option>
+                <option value="moose.png">Moose</option>
+                <option value="narwhal.png">Narwhal</option>
+                <option value="owl.png">Owl</option>
+                <option value="panda.png">Panda</option>
+                <option value="parrot.png">Parrot</option>
+                <option value="penguin.png">Penguin</option>
+                <option value="pig.png">Pig</option>
+                <option value="rabbit.png">Rabbit</option>
+                <option value="rhino.png">Rhino</option>
+                <option value="sloth.png">Sloth</option>
+                <option value="snake.png">Snake</option>
+                <option value="walrus.png">Walrus</option>
+                <option value="whale.png">Whale</option>
+                <option value="zebra.png">Zebra</option>
+
+            </select>
+        </div>
+    </div>
+    <div class="total-container">
+        <div class="container">
+            <h1>Play Online</h1>
+            <div class="username">
+                <p> Hello, {{username}} </p>
+            </div>
+
+            <!-- Display the game board here -->
+            <div id="board-frame" class="board">
+                <div class="frame">
+                    <div class="horizontal-lines">
+                        <div class="line line123"></div>
+                        <div class="line line456"></div>
+                        <div class="line line789"></div>
+                    </div>
+                    <div class="vertical-lines">
+                        <div class="line line147"></div>
+                        <div class="line line258"></div>
+                        <div class="line line369"></div>
+                    </div>
+                    <div class="diagonal-lines">
+                        <div class="line line159"></div>
+                        <div class="line line357"></div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="place empty" data-id="1"></div>
+                    <div class="place empty" data-id="2"></div>
+                    <div class="place empty" data-id="3"></div>
+                </div>
+                <div class="row">
+                    <div class="place empty" data-id="4"></div>
+                    <div class="place empty" data-id="5"></div>
+                    <div class="place empty" data-id="6"></div>
+                </div>
+                <div class="row">
+                    <div class="place empty" data-id="7"></div>
+                    <div class="place empty" data-id="8"></div>
+                    <div class="place empty" data-id="9"></div>
+                </div>
+            </div>
+        </div>
+        <div class="container-msg">
+            <div id="message-container">
+                <input type="text" id="message-input" placeholder="Enter your message">
+                <button id="send-button">Send</button>
+            </div>
+            <div class="chat-history-wrapper">
+                <div id="chat-history">
+                    <!-- Chat history will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        const room_id = "{{ room_id }}";
+        const player = '{{ symbol }}';
+        const is_creator = "{{ is_creator }}"
+        const username = "{{ username }}"
+        console.log(player)
+        const chatHistory = document.getElementById("chat-history");
+        let line_points;
+
+        if (room_id) {
+            const socket = new WebSocket(`ws://${window.location.host}/ws/room/${room_id}/`);
+            let game_over = false;
+            let clicked = 0;
+            let iClicked = false;
+            const dot_width = 20;
+            const dot_margin = 20;
+            const places = document.getElementsByClassName("place");
+            const elementArray = document.querySelectorAll('.place')
+            const player_1 = [];
+            const player_2 = [];
+            let bothPlayersSelected = false;
+
+            const playerAvatarSelect = document.getElementById("playerAvatar");
+            const avatarcontainer = document.getElementById("pieceselectcontainer");
+
+            let selectedPlayerAvatar = "";
+            let otherPlayerAvatar = "";
+            playerAvatarSelect.addEventListener("change", () => {
+                selectedPlayerAvatar = playerAvatarSelect.value;
+                socket.send(JSON.stringify({
+                    'data': {
+                        'info': 'getavatar',
+                        "player": player,
+                        'avatar': selectedPlayerAvatar,
+                    },
+                }));
+                checkAndStartGame();
+            });
+
+            function checkAndStartGame() {
+                if (selectedPlayerAvatar !== "" && otherPlayerAvatar !== "") {
+                    bothPlayersSelected = true;
+                    hideAvatarSelection();
+                }
+            }
+
+            function hideAvatarSelection() {
+                avatarcontainer.style.display = "none";
+            }
+            function showAlertIfNotReady() {
+                if (!bothPlayersSelected) {
+                    alert("Please select avatars for both players before starting the game.");
+                }
+            }
+
+            let gameState = ["", "", "", "", "", "", "", "", ""]
+
+            function updateUI(place, color) {
+                const placeElement = document.querySelector(`[data-id="${place}"]`);
+                if (placeElement) {
+                    if (color == "#0535f4") {
+                        currentPlayerImage = selectedPlayerAvatar;
+                    } else if (color == "#f40505") {
+                        currentPlayerImage = otherPlayerAvatar;
+                    }
+                    const imageContainer = document.createElement('div');
+                    imageContainer.classList.add('image-piece');
+                    imageContainer.style.width = '100%'; 
+                    imageContainer.style.height = '100%';
+                    imageContainer.style.backgroundImage = `url("/static/dotn_game/2d_models/${currentPlayerImage}")`;
+                    imageContainer.style.backgroundSize = 'contain'; 
+                    imageContainer.style.backgroundRepeat = 'no-repeat';
+                    imageContainer.style.backgroundPosition = 'center';
+                    imageContainer.style.position = 'relative';
+                    imageContainer.style.borderRadius = '30px'
+                    imageContainer.style.backgroundColor = color;
+                    placeElement.innerHTML = '';
+                    placeElement.appendChild(imageContainer);
+                    placeElement.classList.remove("empty");
+                }
+            }
+
+            function isAdjacentAndAvailable(fromPlace, toPlace) {
+                const adjacentPlaces = {
+                    1: [2, 4, 5],
+                    2: [1, 3, 5],
+                    3: [2, 5, 6],
+                    4: [1, 5, 7],
+                    5: [1, 2, 3, 4, 6, 7, 8, 9],
+                    6: [3, 5, 9],
+                    7: [4, 5, 8],
+                    8: [5, 7, 9],
+                    9: [6, 5, 8]
+                };
+                return adjacentPlaces[fromPlace].includes(parseInt(toPlace)) && gameState[toPlace - 1] === "";
+            }
+
+            let removeid; 
+            let highlightedPlace = null; 
+
+            function removeplaces(index, value) {
+                index = parseInt(index);
+
+
+                if (gameState[index - 1] !== "" && gameState[index - 1] === value && iClicked === false) {
+                    const placeElement = document.querySelector(`[data-id="${index}"]`);
+                    if (placeElement) {
+                        removeid = index;
+                        if (highlightedPlace) {
+                            highlightedPlace.classList.remove("highlight");
+                        }
+                        placeElement.classList.add("highlight");
+                        highlightedPlace = placeElement;
+
+                        socket.send(JSON.stringify({
+                            'data': {
+                                'info': 'running',
+                                'player': player,
+                                'index': index,
+                            }
+                        }));
+                    }
+
+                    iClicked = false;
+                } else if (iClicked) {
+                    Swal.fire("Invalid Move", "Sorry, not your turn", "error");
+                    --clicked;
+                } else {
+                    Swal.fire("invalid move", "Select your piece", "error");
+                    --clicked;
+                }
+            }
+
+
+            function changeplace(index, value, playername) {
+                index = parseInt(index);
+                const fromPlace = removeid;
+                const toPlace = index;
+
+                if (gameState[toPlace - 1] == value) {
+                    removeplaces(toPlace, value)
+                    --clicked;
+                } else {
+                    if (isAdjacentAndAvailable(fromPlace, toPlace)) {
+                        const placeElementFrom = document.querySelector(`[data-id="${fromPlace}"]`);
+                        const placeElementTo = document.querySelector(`[data-id="${toPlace}"]`);
+                        if (placeElementFrom && placeElementTo) {
+                            const imagePiece = placeElementFrom.querySelector('.image-piece'); // Select the image div
+                            const fromRect = placeElementFrom.getBoundingClientRect();
+                            const toRect = placeElementTo.getBoundingClientRect();
+                            const deltaX = toRect.left - fromRect.left;
+                            const deltaY = toRect.top - fromRect.top;
+
+                            if (highlightedPlace) {
+                                highlightedPlace.classList.remove("highlight");
+                                highlightedPlace = null; // Clear the highlighted place reference
+                            }
+                            // Animate the image div's position
+                            imagePiece.style.transition = `
+                transform 500ms ease-out,
+                z-index 500ms linear`;
+                            imagePiece.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+                            imagePiece.style.zIndex = 1;
+
+                            setTimeout(() => {
+                                placeElementFrom.innerHTML = '';
+                                gameState[fromPlace - 1] = "";
+                                gameState[toPlace - 1] = value;
+                                player_1.push(toPlace);
+
+                                imagePiece.style.transition = '';
+                                imagePiece.style.transform = 'translate(0, 0)';
+                                imagePiece.style.zIndex = '';
+
+                                updateUI(toPlace, "#0535f4");
+                                checkWon(value, player, playername);
+                            }, 500);
+
+                            clicked = 2;
+                            iClicked = true;
+
+                            socket.send(JSON.stringify({
+                                'data': {
+                                    'info': 'move',
+                                    'player': player,
+                                    'fromPlace': fromPlace,
+                                    'toPlace': toPlace,
+                                }
+                            }));
+                        }
+                    } else {
+                        --clicked;
+                        Swal.fire("Invalid Move", "Please choose an adjacent and available position.", "error");
+                    }
+                }
+            }
+
+            function movingplace_2(fromPlace, toPlace, value, playername) {
+
+                if (gameState[toPlace - 1] == value) {
+                    removeplaces(toPlace, value)
+
+                } else {
+                    if (isAdjacentAndAvailable(fromPlace, toPlace)) {
+                        const placeElementFrom = document.querySelector(`[data-id="${fromPlace}"]`);
+                        const placeElementTo = document.querySelector(`[data-id="${toPlace}"]`);
+                        if (placeElementFrom && placeElementTo) {
+                            const imagePiece = placeElementFrom.querySelector('.image-piece'); // Select the image div
+                            const fromRect = placeElementFrom.getBoundingClientRect();
+                            const toRect = placeElementTo.getBoundingClientRect();
+                            const deltaX = toRect.left - fromRect.left;
+                            const deltaY = toRect.top - fromRect.top;
+
+                            if (highlightedPlace) {
+                                highlightedPlace.classList.remove("highlight");
+                                highlightedPlace = null; // Clear the highlighted place reference
+                            }
+                            // Animate the image div's position
+                            imagePiece.style.transition = `
+                transform 500ms ease-out,
+                z-index 500ms linear`;
+                            imagePiece.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+                            imagePiece.style.zIndex = 1;
+
+                            setTimeout(() => {
+                                placeElementFrom.innerHTML = '';
+                                // Update the game state
+                                gameState[fromPlace - 1] = "";
+                                gameState[toPlace - 1] = value;
+                                player_1.push(toPlace);
+
+                                // Clear animation styles
+                                imagePiece.style.transition = '';
+                                imagePiece.style.transform = 'translate(0, 0)';
+                                imagePiece.style.zIndex = '';
+
+                                updateUI(toPlace, "#f40505");
+                                checkWon(value, player, playername)
+                            }, 500); 
+                            clicked = 3;
+                            iClicked = false;
+                        }
+                    } else {
+                        --clicked;
+                        Swal.fire("Invalid Move", "Please choose an adjacent and available position.", "error");
+                    }
+                }
+            }
+
+            elementArray.forEach(function (elem) {
+                elem.addEventListener("click", function (e) {
+                    if (!bothPlayersSelected) {
+                        showAlertIfNotReady();
+                    }
+                    let clickedPlace;
+
+                    if (e.target.classList.contains("image-piece")) {
+                        clickedPlace = e.target.parentNode.dataset.id;
+                    } else {
+                        clickedPlace = e.target.dataset.id;
+                    }
+
+                    if (clicked < 3) {
+                        setText(clickedPlace, player);
+                    } else if (clicked >= 3 && clicked % 2 != 0) {
+                        removeplaces(clickedPlace, player);
+                    } else if (clicked >= 3 && clicked % 2 == 0) {
+                        changeplace(clickedPlace, player);
+                    }
+                    ++clicked;
+                });
+            });
+
+            function setText(index, value) {
+                index = parseInt(index)
+                if (gameState[index - 1] == "" && iClicked === false) {
+                    gameState[index - 1] = value
+                    player_1.push(index)
+                    updateUI(index, "#0535f4")
+                    iClicked = true;
+
+                    socket.send(JSON.stringify(
+                        {
+                            'data': {
+                                'info': 'running',
+                                'player': player,
+                                'index': index,
+                            }
+                        }
+                    ))
+                    checkWon(value, player)
+                }
+                else {
+                    --clicked;
+                    Swal.fire("Invalid Move", "Please check if the clicked place is available and make sure its your turn!", "error");
+                }
+            }
+
+            function setAnotherUserText(index, value, game_over, playername) {
+                if (!bothPlayersSelected) {
+                    showAlertIfNotReady();
+                    return;
+                }
+                if (game_over == false) {
+                    index = parseInt(index);
+                    if (clicked <= 3 && (gameState[index - 1] == "")) {
+                        gameState[index - 1] = value;
+                        updateUI(index, "#f40505");
+                        iClicked = false;
+                    } else {
+                        if (clicked % 2 != 0 && (gameState[index - 1] != "") && gameState[index - 1] === value && iClicked === true) {
+                            iClicked = false;
+                            removeplaces(index, value);
+                            iClicked = false;
+                        } else if (clicked % 2 == 0 && (gameState[index - 1] == "") && iClicked === false) {
+                            changeplace(index, value, playername);
+                            clicked--;
+                            iClicked = true;
+                        }
+                    }
+                }
+            }
+
+            // check who won
+            function checkWon(value, player, playername) {
+                let won = false;
+                if (gameState[0] === value && gameState[1] == value && gameState[2] == value) {   // if 1st row has same values
+                    line_points = "123"
+                    won = true;
+                }
+                else if (gameState[3] === value && gameState[4] == value && gameState[5] == value) {    // if 2nd row has same values
+                    line_points = "456"
+                    won = true
+                }
+                else if (gameState[6] === value && gameState[7] == value && gameState[8] == value) {     // if 3rd row has same values
+                    line_points = "789"
+                    won = true
+                }
+                else if (gameState[0] === value && gameState[3] == value && gameState[6] == value) {      // if 1st col has same values
+                    line_points = "147"
+                    won = true
+                }
+                else if (gameState[1] === value && gameState[4] == value && gameState[7] == value) {      // if 2nd col has same values
+                    line_points = "258"
+                    won = true
+                }
+                else if (gameState[2] === value && gameState[5] == value && gameState[8] == value) {      // if 3rd col has same values
+                    line_points = "369"
+                    won = true
+                }
+                else if (gameState[0] === value && gameState[4] == value && gameState[8] == value) {      // if 1st diagonal has same values
+                    line_points = "159"
+                    won = true
+                }
+                else if (gameState[2] === value && gameState[4] == value && gameState[6] == value) {      // if 2nd diagonal has same values
+                    line_points = "357"
+                    won = true
+                }
+
+                if (won) {
+                    const data = { 'info': 'end', 'player': player }
+                    socket.send(JSON.stringify({ data }))
+                    player = parseInt(player)
+                    if (player == 1) {
+                        gameComplete(line_points, player, playername)
+                    }
+                    else {
+                        gameComplete(line_points, player, playername)
+                    }
+                    clicked = 0;
+                }
+            }
+
+            function gameComplete(line_points, player, playername) {
+                player = parseInt(player)
+                const line = document.querySelector(`.line.line${line_points}`);
+                if (player == 1) {
+                    if (playername == undefined) {
+                        playername = "You"
+                    }
+                    line.style.backgroundColor = "#0535f4"
+                }
+                else {
+                    if (playername == undefined) {
+                        playername = "You"
+                    }
+                    line.style.backgroundColor = "#f40505"
+                }
+
+                gameState = ["", "", "", "", "", "", "", "", ""]
+                clicked = 0;
+                elementArray.forEach((elems) => {
+                    elems.innerHTML = ''
+                })
+                iClicked = false
+                Swal.fire({
+                    title: "Congratulations!",
+                    text: `Player , ${playername} wins!`,
+                    icon: "success",
+                    confirmButtonText: "OK",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        if (is_creator) {
+                            socket.send(JSON.stringify({ 'data': { 'info': 'replay' } }));
+                        }
+                        location.reload(); 
+                    }
+                });
+
+                return game_over = true;
+            }
+
+            const chatHistory = document.getElementById("chat-history");
+
+            function writeMessage(message, user, playername) {
+                const messageElement = document.createElement("div");
+                messageElement.classList.add("chat-message");
+                if (playername === username) {
+                    messageElement.classList.add("user-message");
+                } else {
+                    messageElement.classList.add("other-user-message");
+                }
+                const senderName = document.createElement("span");
+                senderName.classList.add("sender-name");
+                senderName.innerText = playername;
+                const messageText = document.createElement("span");
+                messageText.innerText = `: ${message}`;
+                messageElement.appendChild(senderName);
+                messageElement.appendChild(messageText);
+                chatHistory.appendChild(messageElement);
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+            }
+
+            const sendButton = document.getElementById("send-button");
+            const messageInput = document.getElementById("message-input");
+
+            sendButton.addEventListener("click", () => {
+                const message = messageInput.value.trim();
+                if (message !== "") {
+                    socket.send(JSON.stringify({ 'data': { 'info': 'chat', 'message': message } }));
+                    messageInput.value = "";
+                }
+            });
+
+            messageInput.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                    e.preventDefault(); 
+                    sendButton.click();
+                }
+            });
+
+            socket.onopen = function (e) {
+                console.log("WebSocket connection opened.");
+            };
+
+            socket.onmessage = function (e) {
+                const message = e.data;
+                const parts = message.split(': ');
+                if (parts.length === 2) {
+                    const sender = parts[0];
+                    const payload = parts[1]; 
+                    try {
+                        const data = JSON.parse(payload); 
+                        console.log('Sender:', sender);
+                        console.log('Payload:', data);
+
+                        if (data['data'].info == 'end' && data['data'].player !== player) {
+                            checkWon(data['data'].player, 2, sender)
+                        } else if (data['data'].info == 'over') {
+                            checkWon(data['data'].player, data['data'].player, sender)
+                            return;
+                        } else if (data['data'].info == 'running' && data['data'].player !== player) {
+                            setAnotherUserText(data['data'].index, data['data'].player, game_over, sender);
+                        } else if (data['data'].info == 'move' && data['data'].player !== player) {
+                            movingplace_2(data['data'].fromPlace, data['data'].toPlace, data['data'].player, sender)
+                        } else if (data['data'].info == "getavatar") {
+                            if (player === data['data'].player) {
+                                selectedPlayerAvatar = data['data'].avatar;
+                            } else if (player != data['data'].player) {
+                                otherPlayerAvatar = data['data'].avatar;
+                            }
+                            checkAndStartGame();
+                        }
+                        else if (data['data'].info == "chat" && data['data'].message !== undefined) {
+                            writeMessage(data['data'].message, data['data'].user, sender);
+                        }
+                    } catch (error) {
+                        console.error('Error parsing JSON:', error);
+                    }
+                } else {
+                    console.error('Invalid message format:', message);
+                }
+            };
+
+            socket.onclose = function (e) {
+                console.log(e);
+                console.log("WebSocket connection closed.");
+            };
+
+        } else {
+            console.error("Room ID is missing.");
+        }
+    </script>
+
+</html>
